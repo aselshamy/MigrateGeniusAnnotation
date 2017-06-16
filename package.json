@@ -1,0 +1,8 @@
+{
+  "name": "migrateAnnotations",
+  "version": "0.0.1",
+  "dependencies": {
+    "genius-api": "^0.3.0",
+    "lodash": "^4.17.4"
+  }
+}

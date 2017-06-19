@@ -4,19 +4,21 @@ import urllib
 from IPython import embed
 
 #This needs to be reobtained everytime we want to run the whole flow
-manually_obtained_code = 'EBGMi_o818-dSRRJH6XCVxR09KxPOhabnvloVmLkjhDdhZbDOodDRt_TzbSmS7CW'
+manually_obtained_code = 'txZ9-rgrbTbb5X8FY_rWVfk4BZuyn6T4Gdo--3TPuXMOtXozYzSVRB6RNbFWA1rX'
+
+access_token_from_redirect = 'PxkWo2AeyTwn1m71SeVg1GIyYCKu-uLoQEwJMlgpFiPdtxtFtKE1FGoxgEJAl3JT'
 
 genius_url = 'https://api.genius.com'
-access_token = 'HByvOYAqqce9pfgoCO3eNmJUlxSz0ax6NDWk5w-__bHYcPuvt2bEtAkBbNMaTAaA'
+access_token = 'txZ9-rgrbTbb5X8FY_rWVfk4BZuyn6T4Gdo--3TPuXMOtXozYzSVRB6RNbFWA1rX'
 
-client_id = 'getRMlcsHqrvaO3NfBfgkdq3xE-8d-H1tsdQrHWkoVFICejjYr5WSOIPp_xNsl-0'
-client_secret = 'pz3FGbH5PXoGEtS8X9uTRiFWe-PHZOh_b53io4lg_Dsc4tbDaErot4wlLuDfnQzPIj1or4LaDhIi8_Ql_QS-wQ'
+client_id = 'zX7I0FQjNHvkex8istbKY5nIxGcAwU2fwsteiW76Y8eJbFmydTGAcMYn1Qk9wrWr'
+client_secret = 'fxGkT4cRE8bhy1sHCSECv7JCZHf_7MVTTT3qXh1bbFACRiDl4JHB-L-iJtaXdHVZyJGF8sDJm9zAUcmewNRI0g'
 
 from_url = 'http://ec2-34-226-4-23.compute-1.amazonaws.com/draft/en.wikipedia.org/wiki/Martin_Luther_King_Jr.'
 from_canonical_url = 'Martin_Luther_King_Jr.'
 
 to_url = 'http://ec2-34-226-4-23.compute-1.amazonaws.com/preview/en.wikipedia.org/wiki/Martin_Luther_King_Jr.'
-to_canonical_url = 'Martin_Luther_King_Jr.' 
+to_canonical_url = 'Martin_Luther_King_Jr.'
 
 def get_request(url):
     response = requests.get(url)
@@ -31,38 +33,55 @@ def oauth_string(string):
 
 def get_webpage_lookup(url, canonical_url):
     endpoint = '/web_pages/lookup'
-    return get_request('{api_url}{endpoint}?access_token={access_token}&canoncial_url={canonical_url}&raw_annotatable_url={raw_annotatable_url}'.format(
+    response = get_request('{api_url}{endpoint}?access_token={access_token}&canoncial_url={canonical_url}&raw_annotatable_url={raw_annotatable_url}'.format(
             api_url = genius_url,
             endpoint = endpoint,
             access_token = access_token,
             canonical_url = canonical_url,
             raw_annotatable_url = oauth_string(url)))
+    print 'Page lookup response:'
+    print response
+    return response
 
 def get_referents(website_id):
     endpoint = '/referents'
-    return get_request('{api_url}{endpoint}?access_token={access_token}&web_page_id={web_page_id}'.format(
+    response = get_request('{api_url}{endpoint}?access_token={access_token}&web_page_id={web_page_id}'.format(
             api_url = genius_url,
             endpoint = endpoint,
             access_token = access_token,
             web_page_id = website_id))
+    print 'Referents response:'
+    print response
+    return response
 
 def post_get_authentication():
-    data = {"code": manually_obtained_code,
-            "client_id": client_id,
+    data = {"client_id": client_id,
             "client_secret": client_secret,
-            "redirect_uri": to_url+"html",
-            "reponse_type": "code",
-            "grant_type": "authorization_code"
+            "redirect_uri": "http://ec2-34-226-4-23.compute-1.amazonaws.com/",
+            "response_type": "token",
+            "scope": "create_annotation",
+            "state": "good"
             }
-    return requests.post('{api_url}/oauth/token'.format(api_url = genius_url), json=data)
+    response = requests.get('{api_url}/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope=create_annotation&state=good&response_type=token'.format(
+            api_url = genius_url,
+            client_id = client_id,
+            redirect_uri = 'http://ec2-34-226-4-23.compute-1.amazonaws.com/'))
+
+    response = requests.post('https://api.genius.com/authorizations', json=data)
+    print "Authentication:"
+    print response
+    return response
 
 def post_annotation(referent, access_code):
     endpoint = '/annotations'
     url = '{api_url}{endpoint}?access_token={access_token}'.format(
             api_url = genius_url,
             endpoint = endpoint,
-            access_token = access_code)
-    return post_request(url, referent.to_payload())
+            access_token = access_token_from_redirect)
+    response = post_request(url, referent.to_payload())
+    print 'Post Annotation:'
+    print response
+    return response
 
 class Referent:
     def __init__(self, json):
@@ -80,8 +99,8 @@ class Referent:
 
     def to_payload(self):
         return {
-            "annotation": { 
-                "body": { 
+            "annotation": {
+                "body": {
                     "markdown": self.body
                 }
             },
@@ -99,8 +118,9 @@ class Referent:
         }
 
 # if you need access code, uncomment the following line but also manually get another code for "manually_obtained_code"
-#access_code = json.loads(post_get_authentication().text)['access_token']
-access_code = 'GdkVxUT8BoyqYL7NIZ2BvbCbOOEkTZVWAfLpOUDDadUFPoNx5cizrY157OZmhudj'
+access_token_from_redirect = post_get_authentication().url['access_token']
+#access_code = 'GdkVxUT8BoyqYL7NIZ2BvbCbOOEkTZVWAfLpOUDDadUFPoNx5cizrY157OZmhudj'
+#access_code = ''
 
 website_id = get_webpage_lookup(from_url, from_canonical_url)['response']['web_page']['id']
 

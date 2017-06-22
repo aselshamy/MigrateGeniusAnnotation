@@ -4,12 +4,12 @@ import urllib
 from IPython import embed
 
 #This needs to be reobtained everytime we want to run the whole flow
-manually_obtained_code = 'txZ9-rgrbTbb5X8FY_rWVfk4BZuyn6T4Gdo--3TPuXMOtXozYzSVRB6RNbFWA1rX'
+manually_obtained_code = 'Vjp9gwKeohrY12TNx5w4WrZ1f_I3SQA9FMeWzSp6cHpgtvBkDU5vDEkVjA625ubH'
 
-access_token_from_redirect = 'PxkWo2AeyTwn1m71SeVg1GIyYCKu-uLoQEwJMlgpFiPdtxtFtKE1FGoxgEJAl3JT'
+access_token_from_redirect = '2EmGWs1CN6An5s3fhSH6hslVegwtxR2gtSCnbfderTNbo73gyjKCQFYkM5ixgQF-'
 
 genius_url = 'https://api.genius.com'
-access_token = 'txZ9-rgrbTbb5X8FY_rWVfk4BZuyn6T4Gdo--3TPuXMOtXozYzSVRB6RNbFWA1rX'
+access_token = 'Vjp9gwKeohrY12TNx5w4WrZ1f_I3SQA9FMeWzSp6cHpgtvBkDU5vDEkVjA625ubH'
 
 client_id = 'zX7I0FQjNHvkex8istbKY5nIxGcAwU2fwsteiW76Y8eJbFmydTGAcMYn1Qk9wrWr'
 client_secret = 'fxGkT4cRE8bhy1sHCSECv7JCZHf_7MVTTT3qXh1bbFACRiDl4JHB-L-iJtaXdHVZyJGF8sDJm9zAUcmewNRI0g'
@@ -90,6 +90,11 @@ class Referent:
         self.after_html = json['range']['after']
         self.annotation_path = json['annotations'][0]['api_path']
         self.body = self.get_annotation_body()['response']['annotation']['body']['dom']['children'][0]['children'][0]
+        self.start = json['range']['start']
+        self.end = json['range']['end']
+        self.referent_url = json["url"]
+        self.api_path = json["api_path"]
+        self.content = json['range']['content']
 
     def get_annotation_body(self):
         return get_request('{api_url}{annotation_path}?access_token={access_token}'.format(
@@ -106,10 +111,14 @@ class Referent:
             },
             "referent": {
                 "raw_annotatable_url": to_url,
+                "url": self.referent_url,
                 "fragment": self.fragment,
                 "context_for_display": {
                     "before_html": self.before_html,
-                    "after_html": self.after_html
+                    "after_html": self.after_html,
+                    "content": self.content,
+                    "start": self.start,
+                    "end": self.end
                 }
             },
             "web_page": {
@@ -118,7 +127,7 @@ class Referent:
         }
 
 # if you need access code, uncomment the following line but also manually get another code for "manually_obtained_code"
-access_token_from_redirect = post_get_authentication().url['access_token']
+# access_token_from_redirect = post_get_authentication()
 #access_code = 'GdkVxUT8BoyqYL7NIZ2BvbCbOOEkTZVWAfLpOUDDadUFPoNx5cizrY157OZmhudj'
 #access_code = ''
 
@@ -131,5 +140,4 @@ referents = []
 for referent in referents_json['response']['referents']:
     referents.append(Referent(referent))
 
-
-response = post_annotation(referents[0], access_code)
+response = post_annotation(referents[0], access_token_from_redirect)

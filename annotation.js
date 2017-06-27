@@ -1,6 +1,6 @@
 var api = require('genius-api');
 
-var genius = new api('zwI6ne0AuYLdChLRumQhkgkw-HyRAatII4LBRAkpbWO3lVFrUy93GBAAhlDNMtyh');
+var genius = new api('Vjp9gwKeohrY12TNx5w4WrZ1f_I3SQA9FMeWzSp6cHpgtvBkDU5vDEkVjA625ubH');
 
 var webPage;
 
@@ -43,15 +43,16 @@ function copyAnnotation(referent, index) {
   });
 }
 
-var access_code = 'bXTawJXfHLFsipoqg1yITolcaC3ii-Ko40LU5Ck_PExGuJK6ZQYwK15XQT44GVzT';
+var access_code = '2ff5aUh8npt7meLFFLcnK46FNESNuzkWdYJB-6vmt-cHtAQIsc1Dq2KAw4okgC-a';
 
 function createAnnotation(annotation){
   let request = {
-    "url": "annotations/?acccess_code=".concat(access_code),
+    "url": "/annotations?acccess_code=".concat(access_code),
     "method": "POST",
     "body": JSON.stringify(annotation)
   };
-  genius.requestPromise(request).then(function(resposne) {
+
+  genius.requestPromise(request).then(function(response) {
     console.log('Create Annotation:', response);
   });
 }

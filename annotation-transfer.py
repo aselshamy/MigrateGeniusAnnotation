@@ -1,18 +1,19 @@
+import geniusconfig as config
 import requests
 import json
 import urllib
 from IPython import embed
 
 #This needs to be reobtained everytime we want to run the whole flow
-manually_obtained_code = 'Vjp9gwKeohrY12TNx5w4WrZ1f_I3SQA9FMeWzSp6cHpgtvBkDU5vDEkVjA625ubH'
+manually_obtained_code = config.manually_obtained_code
 
-access_token_from_redirect = '2EmGWs1CN6An5s3fhSH6hslVegwtxR2gtSCnbfderTNbo73gyjKCQFYkM5ixgQF-'
+access_token_from_redirect = config.access_token_from_redirect
 
 genius_url = 'https://api.genius.com'
-access_token = 'Vjp9gwKeohrY12TNx5w4WrZ1f_I3SQA9FMeWzSp6cHpgtvBkDU5vDEkVjA625ubH'
+access_token = config.access_token
 
-client_id = 'zX7I0FQjNHvkex8istbKY5nIxGcAwU2fwsteiW76Y8eJbFmydTGAcMYn1Qk9wrWr'
-client_secret = 'fxGkT4cRE8bhy1sHCSECv7JCZHf_7MVTTT3qXh1bbFACRiDl4JHB-L-iJtaXdHVZyJGF8sDJm9zAUcmewNRI0g'
+client_id = config.client_id
+client_secret = config.client_secret
 
 from_url = 'http://ec2-34-226-4-23.compute-1.amazonaws.com/draft/en.wikipedia.org/wiki/Martin_Luther_King_Jr.'
 from_canonical_url = 'Martin_Luther_King_Jr.'
@@ -39,8 +40,8 @@ def get_webpage_lookup(url, canonical_url):
             access_token = access_token,
             canonical_url = canonical_url,
             raw_annotatable_url = oauth_string(url)))
-    print 'Page lookup response:'
-    print response
+    # print 'Page lookup response:'
+    # print response
     return response
 
 def get_referents(website_id):
@@ -50,8 +51,8 @@ def get_referents(website_id):
             endpoint = endpoint,
             access_token = access_token,
             web_page_id = website_id))
-    print 'Referents response:'
-    print response
+    # print 'Referents response:'
+    # print response
     return response
 
 def post_get_authentication():
@@ -78,7 +79,8 @@ def post_annotation(referent, access_code):
             api_url = genius_url,
             endpoint = endpoint,
             access_token = access_token_from_redirect)
-    response = post_request(url, referent.to_payload())
+    payload = referent.to_payload()
+    response = post_request(url, payload)
     print 'Post Annotation:'
     print response
     return response
@@ -90,11 +92,6 @@ class Referent:
         self.after_html = json['range']['after']
         self.annotation_path = json['annotations'][0]['api_path']
         self.body = self.get_annotation_body()['response']['annotation']['body']['dom']['children'][0]['children'][0]
-        self.start = json['range']['start']
-        self.end = json['range']['end']
-        self.referent_url = json["url"]
-        self.api_path = json["api_path"]
-        self.content = json['range']['content']
 
     def get_annotation_body(self):
         return get_request('{api_url}{annotation_path}?access_token={access_token}'.format(
@@ -111,14 +108,10 @@ class Referent:
             },
             "referent": {
                 "raw_annotatable_url": to_url,
-                "url": self.referent_url,
                 "fragment": self.fragment,
                 "context_for_display": {
                     "before_html": self.before_html,
-                    "after_html": self.after_html,
-                    "content": self.content,
-                    "start": self.start,
-                    "end": self.end
+                    "after_html": self.after_html
                 }
             },
             "web_page": {
